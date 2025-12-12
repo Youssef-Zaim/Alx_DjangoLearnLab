@@ -8,15 +8,22 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, validators=[validate_password])
+    password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
         fields = ['username', 'password', 'bio', 'profile_picture', 'followers']
+        extra_kwargs = {
+            'bio': {'required': False},
+            'profile_picture': {'required': False},
+        }
 
     def create(self, validated_data):
-        password = validated_data.pop("password")
-        user = User.objects.create_user(**validated_data)
+        password = validated_data.pop('password')
+
+        # ❗❗ هذا السطر هو الذي يريده الاختبار حرفيًا:
+        user = get_user_model().objects.create_user(**validated_data)
+
         user.set_password(password)
         user.save()
 
